@@ -9,8 +9,10 @@ import time
 class Dummy():
     pass
 
-# Load pipeline
+# Ng
 default_negative_prompt= "Logo,Watermark,Text,Ugly,Morbid,Extra fingers,Poorly drawn hands,Mutation,Blurry,Extra limbs,Gross proportions,Missing arms,Mutated hands,Long neck,Duplicate,Mutilated,Mutilated hands,Poorly drawn face,Deformed,Bad anatomy,Cloned face,Malformed limbs,Missing legs,Too many fingers"
+
+# Load pipeline
 model_id = "briaai/BRIA-2.2"
 scheduler = EulerAncestralDiscreteScheduler(
                 beta_start=0.00085,
