@@ -71,11 +71,14 @@ css = """
 """
 with gr.Blocks(css=css) as demo:
     with gr.Column(elem_id="col-container"):
-        gr.HTML("""
-        <h2 style="text-align: center;">
-            BRIA-2.2
-        </h2>
-        """)
+        gr.Markdown("## BRIA 2.2 Beta")
+        gr.HTML('''
+          <p style="margin-bottom: 10px; font-size: 94%">
+            This is a demo for 
+            <a href="https://huggingface.co/briaai/BRIA-2.2" target="_blank">BRIA 2.2 text-to-image </a>. 
+            BRIA 2.2 improve the realism of BRIA 2.0 while still trained on licensed data, and so provide full legal liability coverage for copyright and privacy infringement.
+          </p>
+        ''')
         with gr.Group():
             with gr.Column():
                 prompt_in = gr.Textbox(label="Prompt", value="A red colored sports car")
