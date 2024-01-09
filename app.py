@@ -53,15 +53,14 @@ def infer(prompt,negative_prompt,seed,resolution):
     
     # generator = torch.Generator("cuda").manual_seed(555)
     t=time.time()
-    if negative_prompt=="":
-        negative_prompt = default_negative_prompt
 
     if seed==-1:
         generator=None
     else:
         generator = torch.Generator("cuda").manual_seed(seed)
 
-    w,h = resolution
+    w,h = resolution.split()
+    w,h = int(w),int(h)
     image = pipe(prompt,num_inference_steps=30, negative_prompt=negative_prompt,generator=generator,width=w,height=h).images[0]
     print(f'gen time is {time.time()-t} secs')
     
@@ -91,9 +90,9 @@ with gr.Blocks(css=css) as demo:
         with gr.Group():
             with gr.Column():
                 prompt_in = gr.Textbox(label="Prompt", value="A red colored sports car")
-                negative_prompt = gr.Textbox(label="Negative Prompt", value="")
-                resolution = gr.Dropdown(value=(1024,1024), show_label=True, label="Resolution", choices=[(1024,1024),(1344, 768)])
+                resolution = gr.Dropdown(value="1024 1024", show_label=True, label="Resolution", choices=["1024 1024","1344, 768"])
                 seed = gr.Textbox(label="Seed", value=-1)
+                negative_prompt = gr.Textbox(label="Negative Prompt", value=default_negative_prompt)
                 submit_btn = gr.Button("Generate")
         result = gr.Image(label="BRIA-2.2 Result")
 
