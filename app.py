@@ -9,6 +9,8 @@ import time
 class Dummy():
     pass
 
+resolutions = ["1024 1024","1344 768","768 1344"] 
+
 # Ng
 default_negative_prompt= "Logo,Watermark,Text,Ugly,Morbid,Extra fingers,Poorly drawn hands,Mutation,Blurry,Extra limbs,Gross proportions,Missing arms,Mutated hands,Long neck,Duplicate,Mutilated,Mutilated hands,Poorly drawn face,Deformed,Bad anatomy,Cloned face,Malformed limbs,Missing legs,Too many fingers"
 
@@ -54,10 +56,14 @@ def infer(prompt,negative_prompt,seed,resolution):
     # generator = torch.Generator("cuda").manual_seed(555)
     t=time.time()
 
-    if seed==-1:
+    if seed=="-1":
         generator=None
     else:
-        generator = torch.Generator("cuda").manual_seed(seed)
+        try:
+            seed=int(seed)
+            generator = torch.Generator("cuda").manual_seed(seed)
+        except:
+            generator=None
 
     w,h = resolution.split()
     w,h = int(w),int(h)
@@ -90,7 +96,7 @@ with gr.Blocks(css=css) as demo:
         with gr.Group():
             with gr.Column():
                 prompt_in = gr.Textbox(label="Prompt", value="A red colored sports car")
-                resolution = gr.Dropdown(value="1024 1024", show_label=True, label="Resolution", choices=["1024 1024","1344, 768"])
+                resolution = gr.Dropdown(value=resolutions[0], show_label=True, label="Resolution", choices=resolutions)
                 seed = gr.Textbox(label="Seed", value=-1)
                 negative_prompt = gr.Textbox(label="Negative Prompt", value=default_negative_prompt)
                 submit_btn = gr.Button("Generate")
