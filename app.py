@@ -9,7 +9,7 @@ import time
 class Dummy():
     pass
 
-resolutions = ["1024 1024","1344 768","768 1344"] 
+resolutions = ["1024 1024","1280 768","1344 768","768 1344","768 1280"] 
 
 # Ng
 default_negative_prompt= "Logo,Watermark,Text,Ugly,Morbid,Extra fingers,Poorly drawn hands,Mutation,Blurry,Extra limbs,Gross proportions,Missing arms,Mutated hands,Long neck,Duplicate,Mutilated,Mutilated hands,Poorly drawn face,Deformed,Bad anatomy,Cloned face,Malformed limbs,Missing legs,Too many fingers"
@@ -24,27 +24,28 @@ scheduler = EulerAncestralDiscreteScheduler(
                 steps_offset=1
             )
 pipe = StableDiffusionXLPipeline.from_pretrained(model_id, torch_dtype=torch.float16,scheduler=scheduler).to("cuda")
+pipe.force_zeros_for_empty_prompt = False
 
-# print("Optimizing BRIA-2.2 - this could take a while")
-# t=time.time()
-# pipe.unet = torch.compile(
-#     pipe.unet, mode="reduce-overhead", fullgraph=True # 600 secs compilation
-# )
-# with torch.no_grad():
-#     outputs = pipe(
-#         prompt="an apple",
-#         num_inference_steps=30,
-#     )
+print("Optimizing BRIA-2.2 - this could take a while")
+t=time.time()
+pipe.unet = torch.compile(
+    pipe.unet, mode="reduce-overhead", fullgraph=True # 600 secs compilation
+)
+with torch.no_grad():
+    outputs = pipe(
+        prompt="an apple",
+        num_inference_steps=30,
+    )
 
-#     # This will avoid future compilations on different shapes
-#     unet_compiled = torch._dynamo.run(pipe.unet)
-#     unet_compiled.config=pipe.unet.config
-#     unet_compiled.add_embedding = Dummy()
-#     unet_compiled.add_embedding.linear_1 = Dummy()
-#     unet_compiled.add_embedding.linear_1.in_features = pipe.unet.add_embedding.linear_1.in_features
-#     pipe.unet = unet_compiled
+    # This will avoid future compilations on different shapes
+    unet_compiled = torch._dynamo.run(pipe.unet)
+    unet_compiled.config=pipe.unet.config
+    unet_compiled.add_embedding = Dummy()
+    unet_compiled.add_embedding.linear_1 = Dummy()
+    unet_compiled.add_embedding.linear_1.in_features = pipe.unet.add_embedding.linear_1.in_features
+    pipe.unet = unet_compiled
 
-# print(f"Optimizing finished successfully after {time.time()-t} secs")
+print(f"Optimizing finished successfully after {time.time()-t} secs")
 
 @spaces.GPU(enable_queue=True)
 def infer(prompt,negative_prompt,seed,resolution):
