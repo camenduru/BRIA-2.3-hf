@@ -23,29 +23,29 @@ scheduler = EulerAncestralDiscreteScheduler(
             )
 pipe = StableDiffusionXLPipeline.from_pretrained(model_id, torch_dtype=torch.float16,scheduler=scheduler).to("cuda")
 
-print("Optimizing BRIA-2.2 - this could take a while")
-t=time.time()
-pipe.unet = torch.compile(
-    pipe.unet, mode="reduce-overhead", fullgraph=True # 600 secs compilation
-)
-with torch.no_grad():
-    outputs = pipe(
-        prompt="an apple",
-        num_inference_steps=30,
-    )
+# print("Optimizing BRIA-2.2 - this could take a while")
+# t=time.time()
+# pipe.unet = torch.compile(
+#     pipe.unet, mode="reduce-overhead", fullgraph=True # 600 secs compilation
+# )
+# with torch.no_grad():
+#     outputs = pipe(
+#         prompt="an apple",
+#         num_inference_steps=30,
+#     )
 
-    # This will avoid future compilations on different shapes
-    unet_compiled = torch._dynamo.run(pipe.unet)
-    unet_compiled.config=pipe.unet.config
-    unet_compiled.add_embedding = Dummy()
-    unet_compiled.add_embedding.linear_1 = Dummy()
-    unet_compiled.add_embedding.linear_1.in_features = pipe.unet.add_embedding.linear_1.in_features
-    pipe.unet = unet_compiled
+#     # This will avoid future compilations on different shapes
+#     unet_compiled = torch._dynamo.run(pipe.unet)
+#     unet_compiled.config=pipe.unet.config
+#     unet_compiled.add_embedding = Dummy()
+#     unet_compiled.add_embedding.linear_1 = Dummy()
+#     unet_compiled.add_embedding.linear_1.in_features = pipe.unet.add_embedding.linear_1.in_features
+#     pipe.unet = unet_compiled
 
-print(f"Optimizing finished successfully after {time.time()-t} secs")
+# print(f"Optimizing finished successfully after {time.time()-t} secs")
 
 @spaces.GPU(enable_queue=True)
-def infer(prompt):
+def infer(prompt,negative_prompt,seed,resolution):
     print(f"""
     —/n
     {prompt}
@@ -53,7 +53,16 @@ def infer(prompt):
     
     # generator = torch.Generator("cuda").manual_seed(555)
     t=time.time()
-    image = pipe(prompt,num_inference_steps=30, negative_prompt=default_negative_prompt).images[0]
+    if negative_prompt=="":
+        negative_prompt = default_negative_prompt
+
+    if seed==-1:
+        generator=None
+    else:
+        generator = torch.Generator("cuda").manual_seed(seed)
+
+    w,h = resolution
+    image = pipe(prompt,num_inference_steps=30, negative_prompt=negative_prompt,generator=generator,width=w,height=h).images[0]
     print(f'gen time is {time.time()-t} secs')
     
     # Future
@@ -82,6 +91,9 @@ with gr.Blocks(css=css) as demo:
         with gr.Group():
             with gr.Column():
                 prompt_in = gr.Textbox(label="Prompt", value="A red colored sports car")
+                negative_prompt = gr.Textbox(label="Negative Prompt", value="")
+                resolution = gr.Dropdown(value=(1024,1024), show_label=True, label="Resolution", choices=[(1024,1024),(1344, 768)])
+                seed = gr.Textbox(label="Seed", value=-1)
                 submit_btn = gr.Button("Generate")
         result = gr.Image(label="BRIA-2.2 Result")
 
@@ -105,7 +117,10 @@ with gr.Blocks(css=css) as demo:
     submit_btn.click(
         fn = infer,
         inputs = [
-            prompt_in
+            prompt_in,
+            negative_prompt,
+            seed,
+            resolution
         ],
         outputs = [
             result
