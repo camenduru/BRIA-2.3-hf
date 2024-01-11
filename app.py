@@ -96,7 +96,7 @@ with gr.Blocks(css=css) as demo:
         ''')
         with gr.Group():
             with gr.Column():
-                prompt_in = gr.Textbox(label="Prompt", value="A red colored sports car")
+                prompt_in = gr.Textbox(label="Prompt", value="A smiling man with wavy brown hair and a trimmed beard")
                 resolution = gr.Dropdown(value=resolutions[0], show_label=True, label="Resolution", choices=resolutions)
                 seed = gr.Textbox(label="Seed", value=-1)
                 negative_prompt = gr.Textbox(label="Negative Prompt", value=default_negative_prompt)
