@@ -29,7 +29,7 @@ pipe.force_zeros_for_empty_prompt = False
 print("Optimizing BRIA-2.2 - this could take a while")
 t=time.time()
 pipe.unet = torch.compile(
-    pipe.unet, mode="reduce-overhead", fullgraph=True # 600 secs compilation
+    pipe.unet, mode="max-autotune", fullgraph=True # 600 secs compilation
 )
 with torch.no_grad():
     outputs = pipe(
