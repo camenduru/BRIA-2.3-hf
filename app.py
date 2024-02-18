@@ -15,7 +15,7 @@ resolutions = ["1024 1024","1280 768","1344 768","768 1344","768 1280"]
 default_negative_prompt= "Logo,Watermark,Text,Ugly,Morbid,Extra fingers,Poorly drawn hands,Mutation,Blurry,Extra limbs,Gross proportions,Missing arms,Mutated hands,Long neck,Duplicate,Mutilated,Mutilated hands,Poorly drawn face,Deformed,Bad anatomy,Cloned face,Malformed limbs,Missing legs,Too many fingers"
 
 # Load pipeline
-model_id = "briaai/BRIA-2.2"
+model_id = "briaai/BRIA-2.3-BETA"
 scheduler = EulerAncestralDiscreteScheduler(
                 beta_start=0.00085,
                 beta_end=0.012,
@@ -26,7 +26,7 @@ scheduler = EulerAncestralDiscreteScheduler(
 pipe = StableDiffusionXLPipeline.from_pretrained(model_id, torch_dtype=torch.float16,scheduler=scheduler).to("cuda")
 pipe.force_zeros_for_empty_prompt = False
 
-print("Optimizing BRIA-2.2 - this could take a while")
+print("Optimizing BRIA-2.3 - this could take a while")
 t=time.time()
 pipe.unet = torch.compile(
     pipe.unet, mode="reduce-overhead", fullgraph=True # 600 secs compilation
@@ -86,12 +86,12 @@ css = """
 """
 with gr.Blocks(css=css) as demo:
     with gr.Column(elem_id="col-container"):
-        gr.Markdown("## BRIA 2.2 Beta")
+        gr.Markdown("## BRIA 2.3 Beta")
         gr.HTML('''
           <p style="margin-bottom: 10px; font-size: 94%">
             This is a demo for 
-            <a href="https://huggingface.co/briaai/BRIA-2.2" target="_blank">BRIA 2.2 text-to-image </a>. 
-            BRIA 2.2 improve the realism of BRIA 2.0 while still trained on licensed data, and so provide full legal liability coverage for copyright and privacy infringement.
+            <a href="https://huggingface.co/briaai/BRIA-2.3-BETA" target="_blank">BRIA 2.3 text-to-image </a>. 
+            BRIA 2.3 BETA improve the generation of humans and illustrations compared to BRIA 2.2 while still trained on licensed data, and so provide full legal liability coverage for copyright and privacy infringement.
           </p>
         ''')
         with gr.Group():
@@ -101,7 +101,7 @@ with gr.Blocks(css=css) as demo:
                 seed = gr.Textbox(label="Seed", value=-1)
                 negative_prompt = gr.Textbox(label="Negative Prompt", value=default_negative_prompt)
                 submit_btn = gr.Button("Generate")
-        result = gr.Image(label="BRIA-2.2 Result")
+        result = gr.Image(label="BRIA-2.3 Result")
 
         # gr.Examples(
         #     examples = [ 
